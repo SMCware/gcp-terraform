@@ -16,11 +16,18 @@ provider "google" {
 # Variables for dynamic values
 variable "repo" {
   description = "The GitHub repository to bind to the Workload Identity Pool. Format: owner/repo"
+  type        = string
 }
 
 variable "project_id" {
   description = "The project ID where resources will be created."
   type        = string
+}
+
+variable "project_number" {
+  description = "The project number where resources will be created."
+  type        = string
+  
 }
 
 variable "service_account" {
@@ -63,7 +70,7 @@ resource "google_service_account_iam_binding" "workload_identity_user" {
   role               = "roles/iam.workloadIdentityUser"
 
   members = [
-    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_actions_pool.workload_identity_pool_id}/attribute.repository/${var.repo}"
+    "principalSet://iam.googleapis.com/projects/${var.project_number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_actions_pool.workload_identity_pool_id}/attribute.repository/${var.repo}"
   ]
 }
 
@@ -77,7 +84,7 @@ resource "google_iam_workload_identity_pool_provider" "github_actions_provider" 
     "attribute.actor"       = "assertion.actor"
     "attribute.repository"  = "assertion.repository"
   }
-  # attribute_condition = "assertion.repository == \"${var.repo}\""
+  attribute_condition = "assertion.repository == \"${var.repo}\""
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
   }
